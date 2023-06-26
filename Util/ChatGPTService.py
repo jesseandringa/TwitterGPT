@@ -4,7 +4,17 @@ import os
 import requests
 import json
 import openai 
+import random
 
+##GLOBAL 
+insults = []
+###insults to iterate through (randomly)
+def getInsults():
+    with open('resources/insults.txt','r') as file:
+        for line in file:
+            insults.append(line) 
+
+### opens auth.json file to get required api key for http request
 def getApiKey():
     with open('Auth/ChatGPTAuth.json', 'r') as file:
         json_data = json.load(file)
@@ -13,8 +23,8 @@ def getApiKey():
     # openai.api_key = json_data["api_key"]
     # print(openai.Model.list())
 
-
-def generate_completion(prompt):
+### using prompt text, calls chat gpts api and returns the response text. 
+def generateCompletion(prompt):
     response = openai.Completion.create(
         engine='text-davinci-003',  # Choose the appropriate engine
         prompt=prompt,
@@ -25,14 +35,51 @@ def generate_completion(prompt):
     )
     return response.choices[0].text.strip()
 
+###cleans chatgpts completion of any chatgpt lingo
+def cleanGPTResponse(completion):
+    text = completion
+    if completion.__contains__('ChatGPT: '):
+        text = completion.replace('ChatGPT: ', "")
+    if text.__contains__('Q: '):
+        text = text.replace('Q: ', "")
+        if text.__contains__('A: '):
+            text = text.replace('A: ', "")
+    elif text.__contains__('Setup: '):
+        text = text.replace('Setup: ', "")
+        if text.__contains__('Answer: '):
+            text = text.replace('Answer: ', "")
+    
+    return text
+
+### main method. given text prompt, it will format everything and then call the api
+### returns the text completion. 
 def getChatGPTResponse(prompt):
     
     openai.api_key = getApiKey()
+    getInsults()
+    randomIndex = random.randint(0, len(insults)-1)
+    cuss = insults[randomIndex]
+    format = "User: " #
+    prompt = format +'Write a silly joke about the following summary'+  prompt + '.. make fun of the protagonist of the joke for being a '+cuss+'' +'''. Keep the joke to 240 characters maximum. Write the joke in the format style like \" Sea Turtle: humans keep trying to touch me while I\’m swimming.
+    God: it could be worse.
+    Sea Turtle: how?
+    God: tell him crab.
+    Crab: my legs are delicious.
+    God: [nods] his legs are delicious. 
+    
+    or in the style of:
+    [playing 7 minutes in heaven]
+    
+    doctor: ok lol plug him back in now'''
+    
+    completion = generateCompletion(prompt)
+    text = cleanGPTResponse(completion)
+    # print("ChatGPT: " + text)
+    return text
 
-    format = "User: "
-    prompt = format + "Say back to me: what's up bitch! but instead of saying \"bitch\" use the word swordfish"
-    completion = generate_completion(prompt)
-    print("ChatGPT: " + completion)
-    return completion
 
-getChatGPTResponse("hello")
+
+    
+# getChatGPTResponse("Russia's Wagner Group is really bad")
+
+

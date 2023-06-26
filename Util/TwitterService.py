@@ -72,7 +72,7 @@ def  postTweet(text):
     
     
 #script 
-postTweet('Hi Tessssss')
+# postTweet('Hi Tessssss')
 
 
 
