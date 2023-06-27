@@ -60,17 +60,17 @@ def getChatGPTResponse(prompt):
     randomIndex = random.randint(0, len(insults)-1)
     cuss = insults[randomIndex]
     format = "User: " #
-    prompt = format +'Write a silly joke about the following summary'+  prompt + '.. make fun of the protagonist of the joke for being a '+cuss+'' +'''. Keep the joke to 240 characters maximum. Write the joke in the format style like \" Sea Turtle: humans keep trying to touch me while I\’m swimming.
+    prompt = format +'Write a short silly joke about the following summary'+  prompt + '..use nicknames for the actors in the joke. and make fun of the protagonist of the joke for being a '+cuss+'' +'''.  Write the joke in the format style like \" Sea Turtle: humans keep trying to touch me while I\’m swimming.
     God: it could be worse.
     Sea Turtle: how?
     God: tell him crab.
     Crab: my legs are delicious.
     God: [nods] his legs are delicious. 
     
-    or in the style of:
+    or in the format of this joke:
     [playing 7 minutes in heaven]
-    
-    doctor: ok lol plug him back in now'''
+    doctor: ok lol plug him back in now
+    Keep the joke to 230 characters maximum.'''
     
     completion = generateCompletion(prompt)
     text = cleanGPTResponse(completion)

@@ -2,14 +2,19 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
-# Send an HTTP GET request to CNN.com to get main breaking article
-def getBreakingNewsArticle(url):
-    # url = 'https://www.cnn.com/'
-    response = requests.get(url)
-
-    # Create a BeautifulSoup object to parse the HTML content
-    soup = BeautifulSoup(response.content, 'html.parser')
-
+#scrapes fox news' site for top article summary
+def scrapeFox(soup):
+    # mainDiv = soup.find('div', class_ = 'info ' )
+    h3 = soup.find('h3',class_='title')
+    print(h3)
+    articleUrl = h3.find('a')
+    articleUrl = articleUrl['href']
+    # articleUrl = 1
+    # print(articleUrl)
+    return articleUrl,'titleFake'
+  
+#scrapes cnns site for top article summary  
+def scrapeCnn(soup):
     # Find the main breaking news article
     articleUrl = soup.find('a', class_='container__title-url container_lead-package__title-url')
     # print('url tag: ')
@@ -20,11 +25,23 @@ def getBreakingNewsArticle(url):
 
     # Extract the headline text
     headline = articleHeadline.text.strip()
-
-    # Print the headline
-    # print('headline: ')
-    # print(headline)
     return url,headline
+
+# Send an HTTP GET request to CNN.com to get main breaking article
+def getBreakingNewsArticle(url):
+    # url = 'https://www.cnn.com/'
+    response = requests.get(url)
+
+    # Create a BeautifulSoup object to parse the HTML content
+    soup = BeautifulSoup(response.content, 'html.parser')
+    # print(soup)
+    if 'www.foxnews.com' in url : 
+        url, headline = scrapeFox(soup)
+    elif 'www.cnn.com' in url :
+        url, headline = scrapeCnn(soup)
+        
+    return url,headline
+
 
 ##reads list of urls. Checks to see if new url is in list. 
 ##returns true if in list already
@@ -54,17 +71,24 @@ def getArticleSummary(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content,'html.parser')
     # Find the script tag containing the JSON data
-    scriptTag = soup.find('script', id='liveBlog-schema')
+    try:
+        scriptTag = soup.find('script', id='liveBlog-schema')
+            # Extract the JSON data from the script tag
+        jsonData = json.loads(scriptTag.string)
     # print(scriptTag)
+    except: 
+        scriptTag = soup.find('script',type="application/ld+json")
+        jsonData = json.loads(scriptTag.string)
 
-    # Extract the JSON data from the script tag
-    jsonData = json.loads(scriptTag.string)
     # print(jsonData)
 
     # Extract the article body text
-    articleSummary = jsonData['liveBlogUpdate']
     
-    article_bodies = [item['articleBody'] for item in articleSummary]
+    try: 
+        articleSummary = jsonData['liveBlogUpdate']
+        article_bodies = [item['articleBody'] for item in articleSummary]
+    except: 
+        return jsonData['articleBody']
 
     # Print the first article bodies
     # print(article_bodies[0])
@@ -77,3 +101,5 @@ def getArticleSummary(url):
 # url = 'https://www.cnn.com/'
 # articleUrl,headline = getBreakingNewsArticle(url)
 # getArticleSummary(articleUrl)
+
+# a,b = getBreakingNewsArticle('https://www.foxnews.com/')
